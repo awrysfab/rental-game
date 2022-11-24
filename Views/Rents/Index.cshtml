@@ -1,0 +1,82 @@
+﻿@model IEnumerable<game_rental.Models.Rent>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @*@Html.ActionLink("Create New", "Create")*@
+</p>
+<table id="demoGrid" class="table">
+    <thead>
+        <tr>
+            <th>
+                Game Name
+            </th>
+            <th>
+                Renter
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RentDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DueDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReturnDate)
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Game.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Renter.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RentDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DueDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReturnDate)
+                </td>
+                <td>
+                    <button class="btn btn-primary"
+                            onclick="changeReturned('@item.ID')"
+                            @(item.ReturnDate.HasValue ? "disabled" : "" )>
+                        Sudah Kembali
+                    </button>
+                    @*@Html.ActionLink("Details", "Details", new { id = item.ID }) |*@
+                    @*@Html.ActionLink("Delete", "Delete", new { id = item.ID }) |*@
+                </td>
+            </tr>
+        }
+    <tbody>
+</table>
+
+<script>
+    $('#demoGrid').dataTable({});
+
+    function changeReturned(id) {
+        console.log(id);
+        $.ajax({
+            type: "GET",
+            url: `/Rents/ReturnGame/${id}`,
+            success: function (response) {
+                location.reload();
+            },
+            error: function (response) {
+                location.reload();
+            }
+        })
+    }
+</script>

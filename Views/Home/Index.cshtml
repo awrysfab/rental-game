@@ -1,0 +1,95 @@
+﻿@model IEnumerable<game_rental.Models.Game>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Home</h2>
+
+<div style="margin-bottom: 20px">
+    <h4>Total Harga: Rp.<span id="total-price">0</span></h4>
+    <div class="input-group">
+        <span class="input-group-addon" id="basic-addon3">Penyewa</span>
+        @Html.DropDownList("RenterID", null, htmlAttributes: new { @class = "form-control" })
+        &nbsp
+        <button class="btn btn-primary" onclick="payCart()">Bayar</button>
+    </div>
+</div>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">@Html.DisplayFor(modelItem => item.Name)</h3>
+                </div>
+                <div class="panel-body">
+                    <p>@Html.DisplayFor(modelItem => item.Description)</p>
+                    <p>Genre: @Html.DisplayFor(modelItem => item.Genre.Name)</p>
+                </div>
+                <div class="panel-footer" style="display: flex; justify-content: space-between;">
+                    <strong>Rp.@Html.DisplayFor(modelItem => item.Price)</strong>
+                    <button id='tambah-@item.ID' class="btn btn-success" onclick="addToCart('@item.ID', @item.Price)">
+                        Tambah
+                    </button>
+                    <button id='hapus-@item.ID' class="btn btn-danger" onclick="removeFromCart('@item.ID', @item.Price)">
+                        Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    $(document).ready(function () {
+        let total_price = localStorage.getItem('TotalPrice') ? localStorage.getItem('TotalPrice') : 0
+        document.getElementById("total-price").innerHTML = String(total_price);
+    });
+
+    function addToCart(id, price) {
+        let cart_data = localStorage.getItem('CartData') ? JSON.parse(localStorage.getItem('CartData')) : [];
+        let total_price = localStorage.getItem('TotalPrice') ? localStorage.getItem('TotalPrice') : 0;
+        console.log(total_price, String(total_price));
+        if (!cart_data.includes(id)) {
+            total_price = parseInt(total_price) + parseInt(price);
+            cart_data.push(id);
+            localStorage.setItem('TotalPrice', total_price);
+            localStorage.setItem('CartData', JSON.stringify(cart_data));
+            document.getElementById("total-price").innerHTML = String(total_price);
+        }
+    }
+
+    function removeFromCart(id, price) {
+        let cart_data = localStorage.getItem('CartData') ? JSON.parse(localStorage.getItem('CartData')) : [];
+        let total_price = localStorage.getItem('TotalPrice') ? localStorage.getItem('TotalPrice') : 0;
+        if (cart_data.includes(id)) {
+            total_price = parseInt(total_price) - parseInt(price);
+            let filtered = cart_data.filter(function (value) {
+                return value != id;
+            });
+            localStorage.setItem('TotalPrice', total_price);
+            localStorage.setItem('CartData', JSON.stringify(filtered));
+            document.getElementById("total-price").innerHTML = String(total_price);
+        }
+    }
+
+    function payCart() {
+        let renter_id = document.getElementById("RenterID").value;
+        let cart_data = JSON.parse(localStorage.getItem('CartData'));
+        console.log(cart_data);
+        cart_data.forEach((value) => {
+            $.ajax({
+                type: "GET",
+                url: `/Rents/CreateData?GameID=${value}&RenterID=${renter_id}`,
+                success: function (response) {
+                },
+                error: function (response) {
+                }
+            })
+        })
+        localStorage.clear();
+        location.reload();
+    }
+</script>
